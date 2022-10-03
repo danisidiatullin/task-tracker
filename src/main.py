@@ -63,7 +63,7 @@ def get_task(task_id: int, session: Session = Depends(get_session)):
     return task
 
 
-@app.post("/tasks", response_model=Task, status_code=status.HTTP_201_CREATED)
+@app.post("/tasks", response_model=Task)
 def create_task(*, session: Session = Depends(get_session), task: Task):
     new_task = Task.from_orm(task)
 
