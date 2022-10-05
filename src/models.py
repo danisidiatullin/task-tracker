@@ -29,7 +29,7 @@ class Task(SQLModel, table=True):
 
 engine = create_engine(
     "postgresql://postgres:postgres@postgres/postgres_db",  # for running in docker
-    # "postgresql://postgres:postgres@localhost:5432/postgres_db",   # for pytest and local running
+    # "postgresql://postgres:postgres@localhost:5432/postgres_db",   # for pytest
     echo=True,
 )
 
