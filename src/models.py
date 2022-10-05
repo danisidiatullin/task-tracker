@@ -14,7 +14,7 @@ class User(SQLModel, table=True):
     username: str
     email: Union[str, None] = None
     full_name: Union[str, None] = None
-    disabled: Union[bool, None] = None
+    disabled: Union[bool, None] = False
 
 
 class Task(SQLModel, table=True):
