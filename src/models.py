@@ -22,8 +22,8 @@ class Task(SQLModel, table=True):
     title: str
     description: str
     status: Status = Field(sa_column=Column(Enum(Status)))
-    priority: int
-    progress: int
+    priority: int = 10
+    progress: int = 0
     user_id: Optional[int] = Field(default=None, foreign_key="user.id")
 
 

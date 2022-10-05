@@ -28,7 +28,7 @@ def get_task(task_id: int, session: Session = Depends(get_session)):
     return task
 
 
-@router.post("/tasks", response_model=Task)
+@router.post("/tasks", response_model=Task, status_code=status.HTTP_201_CREATED)
 def create_task(*, session: Session = Depends(get_session), task: Task):
     new_task = Task.from_orm(task)
 
