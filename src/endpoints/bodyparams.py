@@ -1,15 +1,21 @@
-from typing import List, Union
+from typing import Union
 
 from fastapi import APIRouter, Body
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 
 router = APIRouter()
+
+
+class Photo(BaseModel):
+    url: HttpUrl
+    name: str
 
 
 class Post(BaseModel):
     title: str
     body: Union[str, None] = None
-    tag: List[str] = []
+    tag: list[str] = []
+    photos: Union[list[Photo], None] = []
 
 
 class User(BaseModel):
