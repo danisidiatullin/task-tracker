@@ -48,19 +48,6 @@ def client_fixture(session: Session):
     app.dependency_overrides.clear()
 
 
-def test_create_hero(client: TestClient):
-    response = client.post(
-        "/heroes/", json={"name": "Deadpond", "secret_name": "Dive Wilson"}
-    )
-    data = response.json()
-
-    assert response.status_code == 200
-    assert data["name"] == "Deadpond"
-    assert data["secret_name"] == "Dive Wilson"
-    assert data["age"] is None
-    assert data["id"] is not None
-
-
 def test_create_task(client: TestClient):
     response = client.post(
         "/tasks/",
@@ -116,3 +103,49 @@ def test_get_tasks_list(session: Session, client: TestClient):
 
     assert response.status_code == 200
     assert len(data) == 2
+
+
+def test_delete_task(session: Session, client: TestClient):
+    task_1 = Task(**fake_task1)
+    session.add(task_1)
+
+    response = client.get("/tasks/")
+    data = response.json()
+    assert len(data) == 1
+
+    response = client.delete("/tasks/1/")
+    assert response.status_code == 204
+
+    response = client.get("/tasks")
+    data = response.json()
+    assert len(data) == 0
+
+
+def test_delete_non_existent_task(session: Session, client: TestClient):
+    task_1 = Task(**fake_task1)
+    session.add(task_1)
+
+    response = client.get("/tasks/")
+    data = response.json()
+    assert len(data) == 1
+
+    response = client.delete("/tasks/2/")
+    assert response.status_code == 404
+
+    response = client.get("/tasks")
+    data = response.json()
+    assert len(data) == 1
+
+
+def test_patch_task(session: Session, client: TestClient):
+    task_1 = Task(**fake_task1)
+    session.add(task_1)
+
+    response = client.get("/tasks/1/")
+    data = response.json()
+    assert data["progress"] == fake_task1["progress"]
+
+    response = client.patch("/tasks/1/", json={"progress": 98})
+    data = response.json()
+    assert data["progress"] != fake_task1["progress"]
+    assert data["progress"] == 98

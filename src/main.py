@@ -1,35 +1,12 @@
-import enum
 from typing import List, Optional, Union
 
-from fastapi import Depends, FastAPI, HTTPException, Query, status
-from sqlmodel import (Column, Enum, Field, Session, SQLModel, create_engine,
-                      select)
+from fastapi import Depends, FastAPI, HTTPException, Query
+from sqlmodel import Field, Session, SQLModel, select
+from starlette import status
 
-from endpoints import bodyparams, pathparams, queryparams, root
-
-
-class HeroBase(SQLModel):
-    name: str = Field(index=True)
-    secret_name: str
-    age: Optional[int] = Field(default=None, index=True)
-
-
-class Hero(HeroBase, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-
-
-class HeroCreate(HeroBase):
-    pass
-
-
-class HeroRead(HeroBase):
-    id: int
-
-
-class HeroUpdate(SQLModel):
-    name: Optional[str] = None
-    secret_name: Optional[str] = None
-    age: Optional[int] = None
+from db import engine
+from models.board_models import Board, BoardCreate, BoardRead, BoardUpdate
+from models.task_models import Task, TaskCreate, TaskRead, TaskUpdate
 
 
 class User(SQLModel, table=True):
@@ -38,26 +15,6 @@ class User(SQLModel, table=True):
     email: Union[str, None] = None
     full_name: Union[str, None] = None
     disabled: Union[bool, None] = False
-
-
-class Status(str, enum.Enum):
-    started = "started"
-    finished = "finished"
-
-
-class Task(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    title: str
-    description: str
-    status: Status = Field(sa_column=Column(Enum(Status)))
-    priority: int = 10
-    progress: int = 0
-    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
-
-
-postgres_url = "postgresql+psycopg2://postgres:postgres@postgres/postgres_db"
-
-engine = create_engine(postgres_url)
 
 
 def create_db_and_tables():
@@ -77,108 +34,119 @@ def on_startup():
     create_db_and_tables()
 
 
-@app.post("/tasks/", response_model=Task, status_code=status.HTTP_201_CREATED)
-def create_task(*, session: Session = Depends(get_session), task: Task):
-    new_task = Task.from_orm(task)
-
-    session.add(new_task)
-
+@app.post("/tasks/", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
+def create_task(*, session: Session = Depends(get_session), task: TaskCreate):
+    db_task = Task.from_orm(task)
+    session.add(db_task)
     session.commit()
-    session.refresh(new_task)
+    session.refresh(db_task)
+    return db_task
 
-    return new_task
 
-
-@app.get("/tasks", response_model=List[Task], status_code=status.HTTP_200_OK)
+@app.get("/tasks/", response_model=List[TaskRead])
 def read_tasks(
     *,
     session: Session = Depends(get_session),
     offset: int = 0,
-    limit: int = Query(default=100, lte=100),
+    limit: int = Query(default=100, lte=1000),
 ):
     tasks = session.exec(select(Task).offset(offset).limit(limit)).all()
-
     return tasks
 
 
-@app.get("/users", response_model=List[User], status_code=status.HTTP_200_OK)
-def get_users(
-    *,
-    session: Session = Depends(get_session),
+@app.get("/tasks/{task_id}/", response_model=TaskRead)
+def read_task(*, session: Session = Depends(get_session), task_id: int):
+    task = session.get(Task, task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return task
+
+
+@app.delete("/tasks/{task_id}/", status_code=status.HTTP_204_NO_CONTENT)
+def delete_task(*, session: Session = Depends(get_session), task_id: int):
+
+    task = session.get(Task, task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    session.delete(task)
+    session.commit()
+    return {"ok": True}
+
+
+@app.patch("/tasks/{task_id}/", response_model=TaskRead)
+def partial_update_task(
+    *, session: Session = Depends(get_session), task_id: int, task: TaskUpdate
 ):
-    users = session.exec(select(User)).all()
-
-    return users
-
-
-@app.post("/users", response_model=User, status_code=status.HTTP_201_CREATED)
-def create_user(*, session: Session = Depends(get_session), user: User):
-    new_user = User.from_orm(user)
-
-    session.add(new_user)
-
+    db_task = session.get(Task, task_id)
+    if not db_task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    task_data = task.dict(exclude_unset=True)
+    for key, value in task_data.items():
+        setattr(db_task, key, value)
+    session.add(db_task)
     session.commit()
-    session.refresh(new_user)
+    session.refresh(db_task)
+    return db_task
 
-    return new_user
 
-
-@app.post("/heroes/", response_model=HeroRead)
-def create_hero(*, session: Session = Depends(get_session), hero: HeroCreate):
-    db_hero = Hero.from_orm(hero)
-    session.add(db_hero)
+@app.post("/boards/", response_model=BoardRead)
+def create_board(*, session: Session = Depends(get_session), team: BoardCreate):
+    db_team = Board.from_orm(team)
+    session.add(db_team)
     session.commit()
-    session.refresh(db_hero)
-    return db_hero
+    session.refresh(db_team)
+    return db_team
 
 
-@app.get("/heroes/", response_model=List[HeroRead])
-def read_heroes(
+@app.get("/boards/", response_model=List[BoardRead])
+def read_boards(
     *,
     session: Session = Depends(get_session),
     offset: int = 0,
     limit: int = Query(default=100, lte=100),
 ):
-    heroes = session.exec(select(Hero).offset(offset).limit(limit)).all()
-    return heroes
+    boards = session.exec(select(Board).offset(offset).limit(limit)).all()
+    return boards
 
 
-@app.get("/heroes/{hero_id}", response_model=HeroRead)
-def read_hero(*, session: Session = Depends(get_session), hero_id: int):
-    hero = session.get(Hero, hero_id)
-    if not hero:
-        raise HTTPException(status_code=404, detail="Hero not found")
-    return hero
+@app.get("/boards/{board_id}", response_model=BoardRead)
+def read_board(*, board_id: int, session: Session = Depends(get_session)):
+    board = session.get(Board, board_id)
+    if not board:
+        raise HTTPException(status_code=404, detail="Board not found")
+    return board
 
 
-@app.patch("/heroes/{hero_id}", response_model=HeroRead)
-def update_hero(
-    *, session: Session = Depends(get_session), hero_id: int, hero: HeroUpdate
+@app.patch("/boards/{board_id}", response_model=BoardRead)
+def update_board(
+    *,
+    session: Session = Depends(get_session),
+    board_id: int,
+    board: BoardUpdate,
 ):
-    db_hero = session.get(Hero, hero_id)
-    if not db_hero:
-        raise HTTPException(status_code=404, detail="Hero not found")
-    hero_data = hero.dict(exclude_unset=True)
-    for key, value in hero_data.items():
-        setattr(db_hero, key, value)
-    session.add(db_hero)
+    db_board = session.get(Board, board_id)
+    if not db_board:
+        raise HTTPException(status_code=404, detail="Board not found")
+    board_data = board.dict(exclude_unset=True)
+    for key, value in board_data.items():
+        setattr(db_board, key, value)
+    session.add(db_board)
     session.commit()
-    session.refresh(db_hero)
-    return db_hero
+    session.refresh(db_board)
+    return db_board
 
 
-@app.delete("/heroes/{hero_id}")
-def delete_hero(*, session: Session = Depends(get_session), hero_id: int):
-
-    hero = session.get(Hero, hero_id)
-    if not hero:
-        raise HTTPException(status_code=404, detail="Hero not found")
-    session.delete(hero)
+@app.delete("/boards/{board_id}")
+def delete_board(*, session: Session = Depends(get_session), board_id: int):
+    board = session.get(Board, board_id)
+    if not board:
+        raise HTTPException(status_code=404, detail="Team not found")
+    session.delete(board)
     session.commit()
     return {"ok": True}
 
 
-app.include_router(root.router)
-app.include_router(pathparams.router)
-app.include_router(queryparams.router)
-app.include_router(bodyparams.router)
+# app.include_router(root.router)
+# app.include_router(pathparams.router)
+# app.include_router(queryparams.router)
+# app.include_router(bodyparams.router)
