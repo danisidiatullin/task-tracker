@@ -11,3 +11,18 @@ for testing:
 ```
 pytest
 ```
+
+## Git hooks
+add file `pre-commit` to `.git/hooks/`
+
+file's content:
+```shell
+#!/bin/sh
+isort src
+black src
+```
+
+make file executable:
+```shell
+chmod +x .git/hooks/pre-commit
+```
