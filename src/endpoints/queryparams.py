@@ -26,11 +26,7 @@ def get_z(z: Union[str, None] = Query(default=None, min_length=5, max_length=10)
 
 
 @router.get("/param/")
-def get_z(
-    z: Union[str, None] = Query(
-        default=None, min_length=5, max_length=10, alias="z-z-z"
-    )
-):
+def get_z(z: Union[str, None] = Query(default=None, min_length=5, max_length=10, alias="z-z-z")):
     results = {
         "x": "xxxxx",
         "y": "yyyyy",

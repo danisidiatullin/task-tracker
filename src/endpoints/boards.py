@@ -5,7 +5,7 @@ from sqlmodel import Session, select
 from starlette import status
 
 from db import get_session
-from models.board_models import Board, BoardCreate, BoardRead, BoardUpdate
+from models.board_models import Board, BoardCreate, BoardRead, BoardReadWithTasks, BoardUpdate
 
 router = APIRouter()
 
@@ -30,7 +30,7 @@ def read_boards(
     return boards
 
 
-@router.get("/boards/{board_id}/", response_model=BoardRead)
+@router.get("/boards/{board_id}/", response_model=BoardReadWithTasks)
 def read_board(*, board_id: int, session: Session = Depends(get_session)):
     board = session.get(Board, board_id)
     if not board:

@@ -5,7 +5,7 @@ from sqlmodel import Session, select
 from starlette import status
 
 from db import get_session
-from models.task_models import Task, TaskCreate, TaskRead, TaskUpdate
+from models.task_models import Task, TaskCreate, TaskRead, TaskReadWithBoard, TaskUpdate
 
 router = APIRouter()
 
@@ -30,7 +30,7 @@ def read_tasks(
     return tasks
 
 
-@router.get("/tasks/{task_id}/", response_model=TaskRead)
+@router.get("/tasks/{task_id}/", response_model=TaskReadWithBoard)
 def read_task(*, session: Session = Depends(get_session), task_id: int):
     task = session.get(Task, task_id)
     if not task:
@@ -50,9 +50,7 @@ def delete_task(*, session: Session = Depends(get_session), task_id: int):
 
 
 @router.patch("/tasks/{task_id}/", response_model=TaskRead)
-def partial_update_task(
-    *, session: Session = Depends(get_session), task_id: int, task: TaskUpdate
-):
+def partial_update_task(*, session: Session = Depends(get_session), task_id: int, task: TaskUpdate):
     db_task = session.get(Task, task_id)
     if not db_task:
         raise HTTPException(status_code=404, detail="Task not found")

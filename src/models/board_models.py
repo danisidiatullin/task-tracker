@@ -21,5 +21,9 @@ class BoardRead(BoardBase):
     id: int
 
 
+class BoardReadWithTasks(BoardRead):
+    tasks: List["TaskRead"] = []
+
+
 class BoardUpdate(SQLModel):
     name: Optional[str] = None

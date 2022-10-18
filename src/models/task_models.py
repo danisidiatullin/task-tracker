@@ -1,7 +1,7 @@
 import enum
 from typing import Optional
 
-from sqlmodel import Column, Enum, Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class Status(enum.Enum):
@@ -31,6 +31,10 @@ class TaskCreate(TaskBase):
 
 class TaskRead(TaskBase):
     id: int
+
+
+class TaskReadWithBoard(TaskRead):
+    board: Optional["BoardRead"] = None
 
 
 class TaskUpdate(SQLModel):
