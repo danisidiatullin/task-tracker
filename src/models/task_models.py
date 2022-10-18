@@ -12,7 +12,7 @@ class Status(enum.Enum):
 class TaskBase(SQLModel):
     title: str
     description: str
-    status: Optional[Status]
+    status: Status
     priority: int = 10
     progress: int = 0
 

@@ -1,8 +1,7 @@
-import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel import Session
 
-from main import Task, app, get_session
+from models.task_models import Task
 
 fake_task1 = {
     "title": "Task1",
@@ -23,29 +22,6 @@ fake_task3 = {
     "description": "about Task2",
     "status": "start",
 }
-
-
-@pytest.fixture(name="session")
-def session_fixture():
-    engine = create_engine(
-        "postgresql+psycopg2://postgres:postgres@localhost:5433/postgres_db",
-    )
-    SQLModel.metadata.create_all(engine)
-    with Session(engine) as session:
-        yield session
-    SQLModel.metadata.drop_all(engine)
-
-
-@pytest.fixture(name="client")
-def client_fixture(session: Session):
-    def get_session_override():
-        return session
-
-    app.dependency_overrides[get_session] = get_session_override
-
-    client = TestClient(app)
-    yield client
-    app.dependency_overrides.clear()
 
 
 def test_create_task(client: TestClient):
@@ -97,7 +73,7 @@ def test_get_tasks_list(session: Session, client: TestClient):
     session.commit()
 
     response = client.get(
-        "/tasks",
+        "/tasks/",
     )
     data = response.json()
 
@@ -116,7 +92,7 @@ def test_delete_task(session: Session, client: TestClient):
     response = client.delete("/tasks/1/")
     assert response.status_code == 204
 
-    response = client.get("/tasks")
+    response = client.get("/tasks/")
     data = response.json()
     assert len(data) == 0
 
@@ -149,3 +125,20 @@ def test_patch_task(session: Session, client: TestClient):
     data = response.json()
     assert data["progress"] != fake_task1["progress"]
     assert data["progress"] == 98
+
+
+def test_patch_with_status_task(session: Session, client: TestClient):
+    task_1 = Task(**fake_task1)
+    session.add(task_1)
+
+    response = client.get("/tasks/1/")
+    data = response.json()
+    assert data["progress"] == fake_task1["progress"]
+    assert data["status"] == fake_task1["status"]
+
+    response = client.patch("/tasks/1/", json={"progress": 98, "status": "finished"})
+    data = response.json()
+    assert data["progress"] != fake_task1["progress"]
+    assert data["progress"] == 98
+    assert data["status"] != fake_task1["status"]
+    assert data["status"] == "finished"
