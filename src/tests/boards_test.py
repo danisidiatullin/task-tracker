@@ -5,10 +5,11 @@ fake_board1 = {
 }
 
 
-def test_create_board(client: TestClient):
+def test_create_board(client: TestClient, auth_headers):
     response = client.post(
         "/boards/",
         json=fake_board1,
+        headers=auth_headers,
     )
     data = response.json()
 

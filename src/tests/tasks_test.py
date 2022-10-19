@@ -24,10 +24,11 @@ fake_task3 = {
 }
 
 
-def test_create_task(client: TestClient):
+def test_create_task(client: TestClient, auth_headers):
     response = client.post(
         "/tasks/",
         json=fake_task1,
+        headers=auth_headers,
     )
     data = response.json()
 
@@ -39,10 +40,11 @@ def test_create_task(client: TestClient):
     assert data["id"] is not None
 
 
-def test_create_task_with_defaults(client: TestClient):
+def test_create_task_with_defaults(client: TestClient, auth_headers):
     response = client.post(
         "/tasks/",
         json=fake_task2,
+        headers=auth_headers,
     )
     data = response.json()
 
@@ -54,12 +56,12 @@ def test_create_task_with_defaults(client: TestClient):
     assert data["id"] is not None
 
 
-def test_create_task_with_wrong_data(client: TestClient):
+def test_create_task_with_wrong_data(client: TestClient, auth_headers):
     response = client.post(
         "/tasks/",
         json=fake_task3,
+        headers=auth_headers,
     )
-    data = response.json()
 
     assert response.status_code == 422
 

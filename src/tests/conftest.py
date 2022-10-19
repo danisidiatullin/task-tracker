@@ -27,3 +27,34 @@ def client_fixture(session: Session):
     client = TestClient(app)
     yield client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(name="user", scope="function")
+def user_fixture():
+    fake_user1 = {
+        "username": "danis1",
+        "password": "danis1",
+        "password2": "danis1",
+        "email": "danis1@example.com",
+        "role": "developer",
+    }
+    return fake_user1
+
+
+@pytest.fixture(name="auth_headers", scope="function")
+def auth_headers_fixture(client: TestClient, user):
+    client.post(
+        "/signup/",
+        json=user,
+    )
+
+    response = client.post(
+        "/login/",
+        json={
+            "username": user["username"],
+            "password": user["password"],
+        },
+    )
+    data = response.json()
+
+    return {"Authorization": f'Bearer {data["token"]}'}

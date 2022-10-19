@@ -1,9 +1,9 @@
 import datetime
 import enum
-from typing import Optional, List
+from typing import List, Optional
 
 from pydantic import EmailStr, validator
-from sqlmodel import Field, SQLModel, Relationship
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class Role(enum.Enum):

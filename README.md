@@ -20,6 +20,7 @@ file's content:
 #!/bin/sh
 isort src
 black src
+git add .
 ```
 
 make file executable:
