@@ -17,12 +17,14 @@ class TaskBase(SQLModel):
     progress: int = 0
 
     board_id: Optional[int] = Field(default=None, foreign_key="board.id")
+    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
 
 
 class Task(TaskBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 
     board: Optional["Board"] = Relationship(back_populates="tasks")
+    user: Optional["User"] = Relationship(back_populates="tasks")
 
 
 class TaskCreate(TaskBase):

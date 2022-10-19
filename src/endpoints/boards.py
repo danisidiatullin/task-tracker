@@ -5,9 +5,10 @@ from sqlmodel import Session, select
 from starlette import status
 
 from db import get_session
+from endpoints.user import auth_handler
 from models.board_models import Board, BoardCreate, BoardRead, BoardReadWithTasks, BoardUpdate
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(auth_handler.auth_wrapper)])
 
 
 @router.post("/boards/", response_model=BoardRead, status_code=status.HTTP_201_CREATED)

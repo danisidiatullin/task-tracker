@@ -5,13 +5,17 @@ from sqlmodel import Session, select
 from starlette import status
 
 from db import get_session
+from endpoints.user import auth_handler
+from models import User
 from models.task_models import Task, TaskCreate, TaskRead, TaskReadWithBoard, TaskUpdate
 
 router = APIRouter()
 
 
 @router.post("/tasks/", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
-def create_task(*, session: Session = Depends(get_session), task: TaskCreate):
+def create_task(*, session: Session = Depends(get_session), task: TaskCreate, user=Depends(auth_handler.auth_wrapper)):
+    user_found = session.exec(select(User).where(User.username == user)).first()
+    task.user_id = user_found.id
     db_task = Task.from_orm(task)
     session.add(db_task)
     session.commit()
