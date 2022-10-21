@@ -42,6 +42,47 @@ def json_user_fixture(session: Session):
     return fake_user1
 
 
+@pytest.fixture(name="json_task", scope="function")
+def json_task_fixture(session: Session):
+    task = {
+        "title": "Task1",
+        "description": "about Task1",
+        "status": "started",
+        "priority": 20,
+        "progress": 80,
+    }
+    return task
+
+
+@pytest.fixture(name="json_task_defaults", scope="function")
+def json_task_defaults_fixture():
+    task = {
+        "title": "Task2",
+        "description": "about Task2",
+        "status": "started",
+    }
+    return task
+
+
+@pytest.fixture(name="json_task_wrong_data", scope="function")
+def json_task_wrong_data_fixture():
+    task = {
+        "title": "Task2",
+        "description": "about Task2",
+        "status": "start",
+    }
+    return task
+
+
+@pytest.fixture(name="json_board", scope="function")
+def json_board_fixture(session: Session):
+    board = {
+        "title": "Board1",
+    }
+
+    return board
+
+
 @pytest.fixture(name="db_user", scope="function")
 def db_user_fixture(session: Session):
     user = UserCreate(

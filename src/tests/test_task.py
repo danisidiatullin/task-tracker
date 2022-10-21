@@ -3,72 +3,52 @@ from sqlmodel import Session
 
 from models.task import Task
 
-fake_task1 = {
-    "title": "Task1",
-    "description": "about Task1",
-    "status": "started",
-    "priority": 20,
-    "progress": 80,
-}
 
-fake_task2 = {
-    "title": "Task2",
-    "description": "about Task2",
-    "status": "started",
-}
-
-fake_task3 = {
-    "title": "Task2",
-    "description": "about Task2",
-    "status": "start",
-}
-
-
-def test_create_task(client: TestClient, auth_headers):
+def test_create_task(client: TestClient, auth_headers, json_task):
     response = client.post(
         "/tasks/",
-        json=fake_task1,
+        json=json_task,
         headers=auth_headers,
     )
     data = response.json()
 
     assert response.status_code == 201
-    assert data["title"] == fake_task1["title"]
-    assert data["description"] == fake_task1["description"]
-    assert data["priority"] == fake_task1["priority"]
-    assert data["progress"] == fake_task1["progress"]
+    assert data["title"] == json_task["title"]
+    assert data["description"] == json_task["description"]
+    assert data["priority"] == json_task["priority"]
+    assert data["progress"] == json_task["progress"]
     assert data["id"] is not None
 
 
-def test_create_task_with_defaults(client: TestClient, auth_headers):
+def test_create_task_with_defaults(client: TestClient, auth_headers, json_task_defaults):
     response = client.post(
         "/tasks/",
-        json=fake_task2,
+        json=json_task_defaults,
         headers=auth_headers,
     )
     data = response.json()
 
     assert response.status_code == 201
-    assert data["title"] == fake_task2["title"]
-    assert data["description"] == fake_task2["description"]
+    assert data["title"] == json_task_defaults["title"]
+    assert data["description"] == json_task_defaults["description"]
     assert data["priority"] == 10
     assert data["progress"] == 0
     assert data["id"] is not None
 
 
-def test_create_task_with_wrong_data(client: TestClient, auth_headers):
+def test_create_task_with_wrong_data(client: TestClient, auth_headers, json_task_wrong_data):
     response = client.post(
         "/tasks/",
-        json=fake_task3,
+        json=json_task_wrong_data,
         headers=auth_headers,
     )
 
     assert response.status_code == 422
 
 
-def test_get_tasks_list(session: Session, client: TestClient):
-    task_1 = Task(**fake_task1)
-    task_2 = Task(**fake_task2)
+def test_get_tasks_list(session: Session, client: TestClient, json_task, json_task_defaults):
+    task_1 = Task(**json_task)
+    task_2 = Task(**json_task_defaults)
 
     session.add(task_1)
     session.add(task_2)
@@ -83,8 +63,8 @@ def test_get_tasks_list(session: Session, client: TestClient):
     assert len(data) == 2
 
 
-def test_delete_task(session: Session, client: TestClient):
-    task_1 = Task(**fake_task1)
+def test_delete_task(session: Session, client: TestClient, json_task):
+    task_1 = Task(**json_task)
     session.add(task_1)
 
     response = client.get("/tasks/")
@@ -99,8 +79,8 @@ def test_delete_task(session: Session, client: TestClient):
     assert len(data) == 0
 
 
-def test_delete_non_existent_task(session: Session, client: TestClient):
-    task_1 = Task(**fake_task1)
+def test_delete_non_existent_task(session: Session, client: TestClient, json_task):
+    task_1 = Task(**json_task)
     session.add(task_1)
 
     response = client.get("/tasks/")
@@ -115,32 +95,32 @@ def test_delete_non_existent_task(session: Session, client: TestClient):
     assert len(data) == 1
 
 
-def test_patch_task(session: Session, client: TestClient):
-    task_1 = Task(**fake_task1)
+def test_patch_task(session: Session, client: TestClient, json_task):
+    task_1 = Task(**json_task)
     session.add(task_1)
 
     response = client.get("/tasks/1/")
     data = response.json()
-    assert data["progress"] == fake_task1["progress"]
+    assert data["progress"] == json_task["progress"]
 
     response = client.patch("/tasks/1/", json={"progress": 98})
     data = response.json()
-    assert data["progress"] != fake_task1["progress"]
+    assert data["progress"] != json_task["progress"]
     assert data["progress"] == 98
 
 
-def test_patch_with_status_task(session: Session, client: TestClient):
-    task_1 = Task(**fake_task1)
+def test_patch_with_status_task(session: Session, client: TestClient, json_task):
+    task_1 = Task(**json_task)
     session.add(task_1)
 
     response = client.get("/tasks/1/")
     data = response.json()
-    assert data["progress"] == fake_task1["progress"]
-    assert data["status"] == fake_task1["status"]
+    assert data["progress"] == json_task["progress"]
+    assert data["status"] == json_task["status"]
 
     response = client.patch("/tasks/1/", json={"progress": 98, "status": "finished"})
     data = response.json()
-    assert data["progress"] != fake_task1["progress"]
+    assert data["progress"] != json_task["progress"]
     assert data["progress"] == 98
-    assert data["status"] != fake_task1["status"]
+    assert data["status"] != json_task["status"]
     assert data["status"] == "finished"

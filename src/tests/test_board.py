@@ -1,18 +1,14 @@
 from starlette.testclient import TestClient
 
-fake_board1 = {
-    "title": "Board1",
-}
 
-
-def test_create_board(client: TestClient, auth_headers):
+def test_create_board(client: TestClient, auth_headers, json_board):
     response = client.post(
         "/boards/",
-        json=fake_board1,
+        json=json_board,
         headers=auth_headers,
     )
     data = response.json()
 
     assert response.status_code == 201
-    assert data["title"] == fake_board1["title"]
+    assert data["title"] == json_board["title"]
     assert data["id"] is not None
