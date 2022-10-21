@@ -4,6 +4,7 @@ from sqlmodel import Session, SQLModel, create_engine
 
 from db import get_session
 from main import app
+from models import User, UserCreate
 
 
 @pytest.fixture(name="session", scope="function")
@@ -29,8 +30,8 @@ def client_fixture(session: Session):
     app.dependency_overrides.clear()
 
 
-@pytest.fixture(name="user", scope="function")
-def user_fixture():
+@pytest.fixture(name="json_user", scope="function")
+def json_user_fixture(session: Session):
     fake_user1 = {
         "username": "danis1",
         "password": "danis1",
@@ -41,18 +42,30 @@ def user_fixture():
     return fake_user1
 
 
+@pytest.fixture(name="db_user", scope="function")
+def db_user_fixture(session: Session):
+    user = UserCreate(
+        username="danis1", password="danis1", password2="danis1", email="danis1@example.com", role="developer"
+    )
+    db_user = User.from_orm(user)
+    # session.add(db_user)
+    # session.commit()
+    # session.refresh(db_user)
+    return db_user
+
+
 @pytest.fixture(name="auth_headers", scope="function")
-def auth_headers_fixture(client: TestClient, user):
+def auth_headers_fixture(client: TestClient, json_user):
     client.post(
         "/signup/",
-        json=user,
+        json=json_user,
     )
 
     response = client.post(
         "/login/",
         json={
-            "username": user["username"],
-            "password": user["password"],
+            "username": json_user["username"],
+            "password": json_user["password"],
         },
     )
     data = response.json()

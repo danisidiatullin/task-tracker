@@ -4,7 +4,7 @@ from starlette import status
 
 from auth.auth import AuthHandler
 from db import get_session
-from models.user_models import User, UserCreate, UserLogin, UserRead
+from models.user import User, UserCreate, UserLogin, UserRead
 
 router = APIRouter()
 auth_handler = AuthHandler()

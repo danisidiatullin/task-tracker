@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
-from models.task_models import Task
+from models.task import Task
 
 fake_task1 = {
     "title": "Task1",

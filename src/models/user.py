@@ -1,5 +1,6 @@
 import datetime
 import enum
+import uuid
 from typing import List, Optional
 
 from pydantic import EmailStr, validator
@@ -36,7 +37,7 @@ class UserCreate(UserBase):
 
 
 class UserRead(UserBase):
-    id: int
+    id: str
     tasks: List["TaskRead"] = []
 
 

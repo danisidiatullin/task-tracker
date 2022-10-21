@@ -8,7 +8,7 @@ from sqlmodel import select
 from starlette import status
 
 from db import get_session
-from models.user_models import User
+from models.user import User
 
 
 class AuthHandler:

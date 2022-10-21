@@ -7,12 +7,12 @@ from starlette import status
 from db import get_session
 from endpoints.user import auth_handler
 from models import User
-from models.task_models import Task, TaskCreate, TaskRead, TaskReadWithBoard, TaskUpdate
+from models.task import Task, TaskCreate, TaskRead, TaskReadWithBoard, TaskUpdate
 
-router = APIRouter()
+router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
-@router.post("/tasks/", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
 def create_task(*, session: Session = Depends(get_session), task: TaskCreate, user=Depends(auth_handler.auth_wrapper)):
     user_found = session.exec(select(User).where(User.username == user)).first()
     task.user_id = user_found.id
@@ -23,7 +23,7 @@ def create_task(*, session: Session = Depends(get_session), task: TaskCreate, us
     return db_task
 
 
-@router.get("/tasks/", response_model=List[TaskRead])
+@router.get("/", response_model=List[TaskRead])
 def read_tasks(
     *,
     session: Session = Depends(get_session),
@@ -34,7 +34,7 @@ def read_tasks(
     return tasks
 
 
-@router.get("/tasks/{task_id}/", response_model=TaskReadWithBoard)
+@router.get("/{task_id}/", response_model=TaskReadWithBoard)
 def read_task(*, session: Session = Depends(get_session), task_id: int):
     task = session.get(Task, task_id)
     if not task:
@@ -42,7 +42,7 @@ def read_task(*, session: Session = Depends(get_session), task_id: int):
     return task
 
 
-@router.delete("/tasks/{task_id}/", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{task_id}/", status_code=status.HTTP_204_NO_CONTENT)
 def delete_task(*, session: Session = Depends(get_session), task_id: int):
 
     task = session.get(Task, task_id)
@@ -53,7 +53,7 @@ def delete_task(*, session: Session = Depends(get_session), task_id: int):
     return {"ok": True}
 
 
-@router.patch("/tasks/{task_id}/", response_model=TaskRead)
+@router.patch("/{task_id}/", response_model=TaskRead)
 def partial_update_task(*, session: Session = Depends(get_session), task_id: int, task: TaskUpdate):
     db_task = session.get(Task, task_id)
     if not db_task:
