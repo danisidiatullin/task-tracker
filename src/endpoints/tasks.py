@@ -5,7 +5,7 @@ from sqlmodel import Session, select
 from starlette import status
 
 from db import get_session
-from endpoints.user import auth_handler
+from endpoints.users import auth_handler
 from models import User
 from models.task import Task, TaskCreate, TaskRead, TaskReadWithBoard, TaskUpdate
 

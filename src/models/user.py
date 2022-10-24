@@ -1,6 +1,5 @@
 import datetime
 import enum
-import uuid
 from typing import List, Optional
 
 from pydantic import EmailStr, validator
@@ -13,11 +12,11 @@ class Role(enum.Enum):
 
 
 class UserBase(SQLModel):
-    username: str = Field(index=True)
+    username: str = Field(index=True, max_length=100)
     password: str = Field(max_length=256, min_length=6)
     email: EmailStr
-    created_at: datetime.datetime = datetime.datetime.now()
     role: Role
+    created_at: datetime.datetime = datetime.datetime.now()
 
 
 class User(UserBase, table=True):
@@ -44,3 +43,15 @@ class UserRead(UserBase):
 class UserLogin(SQLModel):
     username: str
     password: str
+
+
+class ChangePassword(SQLModel):
+    old_password: str
+    new_password: str
+    new_password2: str
+
+    @validator("new_password2")
+    def password_match(cls, v, values, **kwargs):
+        if "new_password" in values and v != values["new_password"]:
+            raise ValueError("passwords don't match")
+        return v

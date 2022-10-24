@@ -4,7 +4,7 @@ from starlette import status
 
 from auth.auth import AuthHandler
 from db import get_session
-from models.user import User, UserCreate, UserLogin, UserRead
+from models.user import ChangePassword, User, UserCreate, UserLogin, UserRead
 
 router = APIRouter()
 auth_handler = AuthHandler()
@@ -33,6 +33,24 @@ def login(*, session: Session = Depends(get_session), user: UserLogin):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username and/or password")
     token = auth_handler.encode_token(user_found.username)
     return {"token": token}
+
+
+@router.post("/change_password/", tags=["users"])
+def change_password(
+    *, session: Session = Depends(get_session), user=Depends(auth_handler.auth_wrapper), passwords: ChangePassword
+):
+    user_found = session.exec(select(User).where(User.username == user)).first()
+    verified = auth_handler.verify_password(passwords.old_password, user_found.password)
+    if not verified:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid old password")
+
+    hashed_new_pwd = auth_handler.get_password_hash(passwords.new_password)
+    user_found.password = hashed_new_pwd
+    session.add(user_found)
+    session.commit()
+    session.refresh(user_found)
+
+    return {"detail": "Password updated"}
 
 
 @router.get("/users/me/", tags=["users"], response_model=UserRead)
