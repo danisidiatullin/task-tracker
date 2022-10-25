@@ -1,3 +1,6 @@
+import os
+import pathlib
+
 from pydantic import BaseSettings
 
 
@@ -9,7 +12,7 @@ class Settings(BaseSettings):
     bucket: str
 
     class Config:
-        env_file = ".env"
+        env_file = f"{pathlib.Path(__file__).resolve().parent}/.env"
 
 
 settings = Settings()
