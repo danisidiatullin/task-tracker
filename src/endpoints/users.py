@@ -1,8 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+import os
+
+import boto3
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlmodel import Session, select
 from starlette import status
 
 from auth.auth import AuthHandler
+from config import settings
 from db import get_session
 from models.user import ChangePassword, User, UserCreate, UserLogin, UserRead
 
@@ -56,4 +60,31 @@ def change_password(
 @router.get("/users/me/", tags=["users"], response_model=UserRead)
 def get_current_user(*, session: Session = Depends(get_session), user=Depends(auth_handler.auth_wrapper)):
     user_found = session.exec(select(User).where(User.username == user)).first()
+    return user_found
+
+
+@router.post("/upload_photo/", tags=["users"], response_model=UserRead)
+def upload_photo(
+    *, session: Session = Depends(get_session), user=Depends(auth_handler.auth_wrapper), data: UploadFile = File(...)
+):
+    user_found = session.exec(select(User).where(User.username == user)).first()
+    s3 = boto3.client(
+        "s3",
+        aws_access_key_id=settings.access_key,
+        aws_secret_access_key=settings.secret_key,
+    )
+
+    key = os.urandom(8).hex() + ".jpg"
+    s3.put_object(
+        Bucket=settings.bucket,
+        Key=key,
+        Body=data.file,
+        ContentType="image/jpg",
+    )
+
+    user_found.photo = key
+    session.add(user_found)
+    session.commit()
+    session.refresh(user_found)
+
     return user_found

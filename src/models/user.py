@@ -16,6 +16,7 @@ class UserBase(SQLModel):
     password: str = Field(max_length=256, min_length=6)
     email: EmailStr
     role: Role
+    photo: Optional[str] = None
     created_at: datetime.datetime = datetime.datetime.now()
 
 
