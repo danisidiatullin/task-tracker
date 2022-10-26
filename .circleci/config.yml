@@ -27,6 +27,14 @@ jobs:
     #    default: '3.9'
     #    description: The `cimg/python` Docker image version tag.
     #    type: string
+    docker:
+      - image: circleci/postgres:latest
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres_db
+          POSTGRES_HOST_AUTH_METHOD: trust
+          PGPORT: 5433
     steps:
       - checkout
       - setup_remote_docker
@@ -51,14 +59,14 @@ jobs:
       - run:
           name: Install Dependencies
           command: pip install -r requirements.txt
-      - run:
-          name: Start Postgres
-          command: | 
-            docker compose up --build postgres -d
-            docker compose up --build postgres-test -d
       #- run:
-      #    name: Wait for db
-      #    command: dockerize -wait tcp://localhost:5433 -timeout 2m
+      #    name: Start Postgres
+      #    command: |
+      #      docker compose up --build postgres -d
+      #      docker compose up --build postgres-test -d
+      - run:
+          name: Wait for db
+          command: dockerize -wait tcp://localhost:5433 -timeout 1m
       - run:
           name: Test
           command: pytest

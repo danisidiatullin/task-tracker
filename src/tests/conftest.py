@@ -10,7 +10,7 @@ from models import User, UserCreate
 @pytest.fixture(name="session", scope="function")
 def session_fixture():
     engine = create_engine(
-        "postgresql+psycopg2://postgres:postgres@postgres:5433/postgres_db",
+        "postgresql+psycopg2://postgres:postgres@localhost:5433/postgres_db",
     )
     SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
