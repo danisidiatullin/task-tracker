@@ -72,7 +72,7 @@ jobs:
           command: dockerize -wait tcp://localhost:5433 -timeout 1m
       - run:
           name: Test
-          command: pytest
+          command: pytest -v --cov
 
 
 
