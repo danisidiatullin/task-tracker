@@ -28,6 +28,9 @@ jobs:
     #    description: The `cimg/python` Docker image version tag.
     #    type: string
     docker:
+      - image: circleci/python:3.9.0
+        environment:
+          - ENV: CIRCLE
       - image: circleci/postgres:latest
         environment:
           POSTGRES_USER: postgres
