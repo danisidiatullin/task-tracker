@@ -64,7 +64,7 @@ jobs:
           command: pip install -r requirements.txt
       - run:
           name: Wait for db
-          command: dockerize -wait tcp://localhost:5432 -timeout 1m
+          command: dockerize -wait tcp://localhost:5433 -timeout 1m
       - run:
           name: Test
           command: pytest -v --cov
