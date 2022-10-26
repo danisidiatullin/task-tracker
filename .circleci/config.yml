@@ -39,6 +39,11 @@ jobs:
             chmod +x ~/docker-compose
             sudo mv ~/docker-compose /usr/local/bin/docker-compose
       - run:
+          name: install dockerize
+          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          environment:
+              DOCKERIZE_VERSION: v0.3.0
+      - run:
           name: Setup Virtual Env
           command: |
             virtualenv -p python3.9 env
@@ -47,11 +52,16 @@ jobs:
           name: Install Dependencies
           command: pip install -r requirements.txt
       - run:
-          name: Test
+          name: Start Postgres
           command: | 
             docker compose up --build postgres -d
             docker compose up --build postgres-test -d
-            pytest
+      - run:
+          name: Wait for db
+          command: dockerize -wait tcp://localhost:5433 -timeout 20s
+      - run:
+          name: Test
+          command: pytest
 
 
 
