@@ -93,4 +93,4 @@ workflows:
             branches:
               only:
                 circleci-project-setup
-          requires: [build-end-test]
+          requires: [build-and-test]
