@@ -88,11 +88,11 @@ workflows:
             branches:
               only:
                 circleci-project-setup
-  style:
-    jobs:
       - style:
           filters:
             branches:
               only:
                 circleci-project-setup
-          requires: [build-and-test]
+          requires:
+            - build-and-test
+
