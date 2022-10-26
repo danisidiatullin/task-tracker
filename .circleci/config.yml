@@ -69,7 +69,7 @@ jobs:
           name: Test
           command: | 
            pytest -v --cov
-           coverage report --fail-under=80
+           coverage report --fail-under=90
 
 
 
