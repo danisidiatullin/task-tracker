@@ -39,7 +39,10 @@ jobs:
           command: pip install -r requirements.txt
       - run:
           name: Test
-          command: pytest
+          command: | 
+            docker compose up --build postgres -d
+            docker compose up --build postgres-test -d
+            pytest
 
 
 
