@@ -71,6 +71,9 @@ jobs:
            pytest -v --cov
            coverage report --fail-under=80
   style:
+    executor:
+      name: python/default
+      tag: '3.9'
     steps:
       - run:
           name: flake8
