@@ -69,7 +69,12 @@ jobs:
           name: Test
           command: | 
            pytest -v --cov
-           coverage report --fail-under=90
+           coverage report --fail-under=80
+  style:
+    steps:
+      - run:
+          name: flake8
+          command: flake8 src
 
 
 
@@ -83,3 +88,9 @@ workflows:
             branches:
               only:
                 circleci-project-setup
+      - style:
+          filters:
+            branches:
+              only:
+                circleci-project-setup
+          requires: [build-end-test]
