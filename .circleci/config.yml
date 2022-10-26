@@ -58,7 +58,7 @@ jobs:
             docker compose up --build postgres-test -d
       - run:
           name: Wait for db
-          command: dockerize -wait tcp://localhost:5433 -timeout 20s
+          command: dockerize -wait tcp://localhost:5433 -timeout 2m
       - run:
           name: Test
           command: pytest
