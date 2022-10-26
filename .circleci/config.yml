@@ -4,23 +4,41 @@ version: 2.1
 
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
+
+orb:
+  python: circleci/python@2.1.1
+
 jobs:
-  say-hello:
+  build-and-test:
+    executor:
+      name: python/default
+      tag: '3.9'
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
-    docker:
-      - image: cimg/base:stable
+    #docker:
+    #  - image: cimg/base:stable
     # Add steps to the job
     # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
       - checkout
       - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
+          name: Setup Virtual Env
+          command: |
+            virtualenv -p python3.9 env
+            echo "source ./env/bin/activate" >> $BASH_ENV
+      - run:
+          name: Install Dependencies
+          command: pip install -r requirements.txt
+
+
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  say-hello-workflow:
+  build-test-and-deploy:
     jobs:
-      - say-hello
+      - build-and-test:
+          filters:
+            branches:
+              only:
+                circleci-project-setup
