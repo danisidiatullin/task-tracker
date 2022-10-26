@@ -1,4 +1,3 @@
-import os
 import pathlib
 
 from pydantic import BaseSettings

@@ -1,9 +1,8 @@
 import os
 
 import boto3
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlmodel import Session, select
-from starlette import status
 
 from auth.auth import AuthHandler
 from config import settings
