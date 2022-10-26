@@ -67,7 +67,9 @@ jobs:
           command: dockerize -wait tcp://localhost:5433 -timeout 1m
       - run:
           name: Test
-          command: pytest -v --cov
+          command: | 
+           pytest -v --cov
+           coverage report --fail-under=80
 
 
 

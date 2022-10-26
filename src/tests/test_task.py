@@ -12,7 +12,7 @@ def test_create_task(client: TestClient, auth_headers, json_task):
     )
     data = response.json()
 
-    assert response.status_code == 205
+    assert response.status_code == 201
     assert data["title"] == json_task["title"]
     assert data["description"] == json_task["description"]
     assert data["priority"] == json_task["priority"]
