@@ -88,6 +88,8 @@ workflows:
             branches:
               only:
                 circleci-project-setup
+  style:
+    jobs:
       - style:
           filters:
             branches:
