@@ -38,10 +38,15 @@ def test_login_user(session: Session, client: TestClient, json_user_developer):
     assert "token" in data
 
 
-def test_users_me(session: Session, client: TestClient, json_user_developer, auth_headers_developer):
+def test_users_me(session: Session, client: TestClient, json_user_developer):
+    response = client.post(
+        "/signup/",
+        json=json_user_developer,
+    )
+
     response = client.get(
         "/users/me/",
-        headers=auth_headers_developer,
+        headers=auth_headers_developer(client, json_user_developer),
     )
     data = response.json()
     assert response.status_code == 200

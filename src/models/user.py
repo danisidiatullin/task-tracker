@@ -60,9 +60,3 @@ class ChangePassword(SQLModel):
 
 class UserRoleUpdate(SQLModel):
     role: Role
-
-    @validator("role")
-    def role_match(cls, v, values, **kwargs):
-        if "role" not in values or v == Role.developer:
-            raise ValueError("You can't change Role to 'developer'!")
-        return v

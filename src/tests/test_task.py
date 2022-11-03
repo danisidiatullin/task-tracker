@@ -2,13 +2,18 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 
 from models.task import Task
+from tests.utils import auth_headers_developer
 
 
-def test_create_task(client: TestClient, auth_headers_developer, json_task):
+def test_create_task(client: TestClient, json_user_developer, json_task):
+    client.post(
+        "/signup/",
+        json=json_user_developer,
+    )
     response = client.post(
         "/tasks/",
         json=json_task,
-        headers=auth_headers_developer,
+        headers=auth_headers_developer(client, json_user_developer),
     )
     data = response.json()
 
@@ -20,11 +25,15 @@ def test_create_task(client: TestClient, auth_headers_developer, json_task):
     assert data["id"] is not None
 
 
-def test_create_task_with_defaults(client: TestClient, auth_headers_developer, json_task_defaults):
+def test_create_task_with_defaults(client: TestClient, json_user_developer, json_task_defaults):
+    client.post(
+        "/signup/",
+        json=json_user_developer,
+    )
     response = client.post(
         "/tasks/",
         json=json_task_defaults,
-        headers=auth_headers_developer,
+        headers=auth_headers_developer(client, json_user_developer),
     )
     data = response.json()
 
@@ -36,11 +45,15 @@ def test_create_task_with_defaults(client: TestClient, auth_headers_developer, j
     assert data["id"] is not None
 
 
-def test_create_task_with_wrong_data(client: TestClient, auth_headers_developer, json_task_wrong_data):
+def test_create_task_with_wrong_data(client: TestClient, json_user_developer, json_task_wrong_data):
+    client.post(
+        "/signup/",
+        json=json_user_developer,
+    )
     response = client.post(
         "/tasks/",
         json=json_task_wrong_data,
-        headers=auth_headers_developer,
+        headers=auth_headers_developer(client, json_user_developer),
     )
 
     assert response.status_code == 422

@@ -95,6 +95,8 @@ def update_user_role(*, session: Session = Depends(get_session), user_id: int, u
     db_user = session.get(User, user_id)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
+    if user.role == Role.developer:
+        raise HTTPException(status_code=422, detail="You can't change role to developer!")
     db_user.role = user.role
     session.add(db_user)
     session.commit()
