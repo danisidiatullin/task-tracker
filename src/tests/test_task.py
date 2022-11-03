@@ -4,11 +4,11 @@ from sqlmodel import Session
 from models.task import Task
 
 
-def test_create_task(client: TestClient, auth_headers, json_task):
+def test_create_task(client: TestClient, auth_headers_developer, json_task):
     response = client.post(
         "/tasks/",
         json=json_task,
-        headers=auth_headers,
+        headers=auth_headers_developer,
     )
     data = response.json()
 
@@ -20,11 +20,11 @@ def test_create_task(client: TestClient, auth_headers, json_task):
     assert data["id"] is not None
 
 
-def test_create_task_with_defaults(client: TestClient, auth_headers, json_task_defaults):
+def test_create_task_with_defaults(client: TestClient, auth_headers_developer, json_task_defaults):
     response = client.post(
         "/tasks/",
         json=json_task_defaults,
-        headers=auth_headers,
+        headers=auth_headers_developer,
     )
     data = response.json()
 
@@ -36,11 +36,11 @@ def test_create_task_with_defaults(client: TestClient, auth_headers, json_task_d
     assert data["id"] is not None
 
 
-def test_create_task_with_wrong_data(client: TestClient, auth_headers, json_task_wrong_data):
+def test_create_task_with_wrong_data(client: TestClient, auth_headers_developer, json_task_wrong_data):
     response = client.post(
         "/tasks/",
         json=json_task_wrong_data,
-        headers=auth_headers,
+        headers=auth_headers_developer,
     )
 
     assert response.status_code == 422

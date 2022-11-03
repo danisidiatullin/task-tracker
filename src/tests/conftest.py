@@ -30,14 +30,50 @@ def client_fixture(session: Session):
     app.dependency_overrides.clear()
 
 
-@pytest.fixture(name="json_user", scope="function")
-def json_user_fixture(session: Session):
+@pytest.fixture(name="json_user_developer", scope="function")
+def json_user_developer_fixture(session: Session):
     fake_user1 = {
         "username": "danis1",
         "password": "danis1",
         "password2": "danis1",
         "email": "danis1@example.com",
         "role": "developer",
+    }
+    return fake_user1
+
+
+@pytest.fixture(name="json_user_developer2", scope="function")
+def json_user_developer2_fixture(session: Session):
+    fake_user1 = {
+        "username": "danis3",
+        "password": "danis3",
+        "password2": "danis3",
+        "email": "danis3@example.com",
+        "role": "developer",
+    }
+    return fake_user1
+
+
+@pytest.fixture(name="json_user_manager", scope="function")
+def json_user_manager_fixture(session: Session):
+    fake_user1 = {
+        "username": "danis2",
+        "password": "danis2",
+        "password2": "danis2",
+        "email": "danis2@example.com",
+        "role": "manager",
+    }
+    return fake_user1
+
+
+@pytest.fixture(name="json_user_manager2", scope="function")
+def json_user_manager2_fixture(session: Session):
+    fake_user1 = {
+        "username": "danis4",
+        "password": "danis4",
+        "password2": "danis4",
+        "email": "danis4@example.com",
+        "role": "manager",
     }
     return fake_user1
 
@@ -83,32 +119,13 @@ def json_board_fixture(session: Session):
     return board
 
 
-@pytest.fixture(name="db_user", scope="function")
-def db_user_fixture(session: Session):
-    user = UserCreate(
-        username="danis1", password="danis1", password2="danis1", email="danis1@example.com", role="developer"
-    )
-    db_user = User.from_orm(user)
-    # session.add(db_user)
-    # session.commit()
-    # session.refresh(db_user)
-    return db_user
-
-
-@pytest.fixture(name="auth_headers", scope="function")
-def auth_headers_fixture(client: TestClient, json_user):
-    client.post(
-        "/signup/",
-        json=json_user,
-    )
-
-    response = client.post(
-        "/login/",
-        json={
-            "username": json_user["username"],
-            "password": json_user["password"],
-        },
-    )
-    data = response.json()
-
-    return {"Authorization": f'Bearer {data["token"]}'}
+# @pytest.fixture(name="db_user", scope="function")
+# def db_user_fixture(session: Session):
+#    user = UserCreate(
+#        username="danis1", password="danis1", password2="danis1", email="danis1@example.com", role="developer"
+#    )
+#    db_user = User.from_orm(user)
+#    # session.add(db_user)
+#    # session.commit()
+#    # session.refresh(db_user)
+#    return db_user

@@ -37,7 +37,7 @@ class UserCreate(UserBase):
 
 
 class UserRead(UserBase):
-    id: str
+    id: int
     tasks: List["TaskRead"] = []
 
 
@@ -55,4 +55,14 @@ class ChangePassword(SQLModel):
     def password_match(cls, v, values, **kwargs):
         if "new_password" in values and v != values["new_password"]:
             raise ValueError("passwords don't match")
+        return v
+
+
+class UserRoleUpdate(SQLModel):
+    role: Role
+
+    @validator("role")
+    def role_match(cls, v, values, **kwargs):
+        if "role" not in values or v == Role.developer:
+            raise ValueError("You can't change Role to 'developer'!")
         return v

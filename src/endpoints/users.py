@@ -7,13 +7,14 @@ from sqlmodel import Session, select
 from auth.auth import AuthHandler
 from config import settings
 from db import get_session
-from models.user import ChangePassword, User, UserCreate, UserLogin, UserRead
+from models.user import ChangePassword, Role, User, UserCreate, UserLogin, UserRead, UserRoleUpdate
+from utils import RoleChecker
 
-router = APIRouter()
+router = APIRouter(tags=["users"])
 auth_handler = AuthHandler()
 
 
-@router.post("/signup/", status_code=status.HTTP_201_CREATED, tags=["users"], description="Register new user")
+@router.post("/signup/", status_code=status.HTTP_201_CREATED, description="Register new user")
 def signup(*, session: Session = Depends(get_session), user: UserCreate):
     users = session.exec(select(User)).all()
     if any(x.username == user.username for x in users):
@@ -26,7 +27,7 @@ def signup(*, session: Session = Depends(get_session), user: UserCreate):
     return user
 
 
-@router.post("/login/", tags=["users"])
+@router.post("/login/")
 def login(*, session: Session = Depends(get_session), user: UserLogin):
     user_found = session.exec(select(User).where(User.username == user.username)).first()
     if not user_found:
@@ -38,7 +39,7 @@ def login(*, session: Session = Depends(get_session), user: UserLogin):
     return {"token": token}
 
 
-@router.post("/change_password/", tags=["users"])
+@router.post("/change_password/")
 def change_password(
     *, session: Session = Depends(get_session), user=Depends(auth_handler.auth_wrapper), passwords: ChangePassword
 ):
@@ -56,13 +57,13 @@ def change_password(
     return {"detail": "Password updated"}
 
 
-@router.get("/users/me/", tags=["users"], response_model=UserRead)
+@router.get("/users/me/", response_model=UserRead)
 def get_current_user(*, session: Session = Depends(get_session), user=Depends(auth_handler.auth_wrapper)):
     user_found = session.exec(select(User).where(User.username == user)).first()
     return user_found
 
 
-@router.post("/upload_photo/", tags=["users"], response_model=UserRead)
+@router.post("/upload_photo/", response_model=UserRead)
 def upload_photo(
     *, session: Session = Depends(get_session), user=Depends(auth_handler.auth_wrapper), data: UploadFile = File(...)
 ):
@@ -87,3 +88,15 @@ def upload_photo(
     session.refresh(user_found)
 
     return user_found
+
+
+@router.patch("/users/{user_id}/", response_model=UserRead, dependencies=[Depends(RoleChecker(Role.manager))])
+def update_user_role(*, session: Session = Depends(get_session), user_id: int, user: UserRoleUpdate):
+    db_user = session.get(User, user_id)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    db_user.role = user.role
+    session.add(db_user)
+    session.commit()
+    session.refresh(db_user)
+    return db_user
