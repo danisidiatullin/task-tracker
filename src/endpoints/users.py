@@ -90,7 +90,7 @@ def upload_photo(
     return user_found
 
 
-@router.patch("/users/{user_id}/", response_model=UserRead, dependencies=[Depends(RoleChecker(Role.manager))])
+@router.patch("/users/{user_id}/", response_model=UserRead, dependencies=[Depends(RoleChecker([Role.manager]))])
 def update_user_role(*, session: Session = Depends(get_session), user_id: int, user: UserRoleUpdate):
     db_user = session.get(User, user_id)
     if not db_user:
